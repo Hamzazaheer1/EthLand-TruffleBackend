@@ -38,6 +38,7 @@ contract Land {
     mapping(address => User) public UserMapping;
     mapping(uint => address)  AllUsers;
     mapping(uint => address[])  allUsersList;
+    mapping(uint => address[])  allUnverifiedUsersList;
     mapping(address => bool)  RegisteredUserMapping;
 
 // general
@@ -148,14 +149,14 @@ contract Land {
     }
 
 // [Users]
-    function registerUser(string memory _name, uint _age, string memory _city, string memory _cnic, uint _mobile
-    ) public {
+    function registerUser(string memory _name, uint _age, string memory _city, string memory _cnic, uint _mobile) public {
 
         require(!RegisteredUserMapping[msg.sender]);
 
         RegisteredUserMapping[msg.sender] = true;
         userCount++;
         allUsersList[1].push(msg.sender);
+        allUnverifiedUsersList[1].push(msg.sender);
         AllUsers[userCount]=msg.sender;
         UserMapping[msg.sender] = User(msg.sender, _name, _age, _city, _cnic, _mobile, false);
         //emit Registration(msg.sender);
@@ -171,6 +172,17 @@ contract Land {
     function verifyUser(address _userId) public{
         require(isAdmin(msg.sender));
         UserMapping[_userId].isUserVerified=true;
+        
+        uint len=allUnverifiedUsersList[1].length;
+        for(uint i=0;i<len;i++)
+        {
+            if(allUnverifiedUsersList[1][i]==_userId)
+            {
+                allUnverifiedUsersList[1][i]=allUnverifiedUsersList[1][len-1];
+                allUnverifiedUsersList[1].pop();
+                break;
+            }
+        }
     }
 
 // [admin]   
@@ -196,4 +208,10 @@ contract Land {
             }
         }
     }
+
+// [admin]   
+    function ReturnAllUrverifiedUsers() public view returns(address[] memory){
+        return allUnverifiedUsersList[1];
+    }
+   
 }
