@@ -28,8 +28,30 @@ contract Land {
         bool isUserVerified;
     }
 
+    struct LandInfo {
+        uint khaiwatNumber; //auto
+        uint KhatuniCultivatorNo; //auto
+        string name;
+        string fatherName;
+        string natureOfProperty;
+        string specificShareinJointAccount;
+        uint specificAreainaccordancewiththeShare;
+        uint khasraNo; 
+        uint landPrice;
+        bool isforSell;
+        address payable ownerAddress;
+        bool isLandVerified;
+    }
+
+
     uint adminCount;
     uint public userCount;
+
+    //testing
+     uint public landsCount;
+     uint public khaiwatNumber;
+     uint public KhatuniCultivatorNo;
+     
 
     mapping(address => Admin) public AdminMapping;
     mapping(uint => address[]) allAdminList;
@@ -40,6 +62,11 @@ contract Land {
     mapping(uint => address[])  allUsersList;
     mapping(uint => address[])  allUnverifiedUsersList;
     mapping(address => bool)  RegisteredUserMapping;
+
+    //land working on it
+    mapping(uint => LandInfo) public LandR;
+    mapping(address => uint[])  MyLands;
+    mapping(uint => uint[])  allLandList;
 
 // general
     function isLogin(address _addr, uint _secP) public view returns(uint){
@@ -214,4 +241,39 @@ contract Land {
         return allUnverifiedUsersList[1];
     }
    
+   //-----------------------------------------------Land-----------------------------------------------
+    
+// [User]    
+    function addLand(string memory _name, string memory _fathername, string memory _natureofproperty, string memory _specificShareinJointAccount, uint _specificAreainaccordancewiththeShare,uint _khasranumber , uint _landPrice ) public {
+        require(isUserVerified(msg.sender));
+        landsCount++;
+        khaiwatNumber++;
+        KhatuniCultivatorNo++;
+        LandR[landsCount] = LandInfo(khaiwatNumber,KhatuniCultivatorNo,_name,_fathername,_natureofproperty,_specificShareinJointAccount,_specificAreainaccordancewiththeShare,_khasranumber, _landPrice,false,payable(msg.sender),false);
+        MyLands[msg.sender].push(landsCount);
+        allLandList[1].push(landsCount);
+        // emit AddingLand(landsCount);
+    }
+
+// [User]
+    function ReturnAllLandList() public view returns(uint[] memory)
+    {
+        return allLandList[1];
+    }
+
+// [User]
+    function verifyLand(uint _id) public{
+        require(isAdmin(msg.sender));
+        LandR[_id].isLandVerified=true;
+    }
+
+// [User]    
+    function isLandVerified(uint id) public view returns(bool){
+        return LandR[id].isLandVerified;
+    }
+
+// [User]
+    function myAllLands(address id) public view returns( uint[] memory){
+        return MyLands[id];
+    }
 }
