@@ -39,7 +39,6 @@ contract Land {
         uint khasraNo; 
         uint landPrice;
         bool isforSell;
-        address payable ownerAddress;
         bool isLandVerified;
     }
 
@@ -66,6 +65,7 @@ contract Land {
     //land working on it
     mapping(uint => LandInfo) public LandR;
     mapping(address => uint[])  MyLands;
+    mapping(uint => address) public LandOwner;
     mapping(uint => uint[])  allLandList;
 
 // general
@@ -242,14 +242,14 @@ contract Land {
     }
    
    //-----------------------------------------------Land-----------------------------------------------
-    
-// [User]    
-    function addLand(string memory _name, string memory _fathername, string memory _natureofproperty, string memory _specificShareinJointAccount, uint _specificAreainaccordancewiththeShare,uint _khasranumber , uint _landPrice ) public {
+
+   function addLand(string memory _name, string memory _fathername, string memory _natureofproperty, string memory _specificShareinJointAccount, uint _specificAreainaccordancewiththeShare,uint _khasranumber , uint _landPrice ) public {
         require(isUserVerified(msg.sender));
-        landsCount++;
         khaiwatNumber++;
         KhatuniCultivatorNo++;
-        LandR[landsCount] = LandInfo(khaiwatNumber,KhatuniCultivatorNo,_name,_fathername,_natureofproperty,_specificShareinJointAccount,_specificAreainaccordancewiththeShare,_khasranumber, _landPrice,false,payable(msg.sender),false);
+        landsCount++;
+        LandR[landsCount] = LandInfo(khaiwatNumber, KhatuniCultivatorNo, _name, _fathername, _natureofproperty, _specificShareinJointAccount, _specificAreainaccordancewiththeShare, _khasranumber, _landPrice, false, false);
+        LandOwner[landsCount] = msg.sender;
         MyLands[msg.sender].push(landsCount);
         allLandList[1].push(landsCount);
         // emit AddingLand(landsCount);
@@ -261,13 +261,13 @@ contract Land {
         return allLandList[1];
     }
 
-// [User]
+// [Admin]
     function verifyLand(uint _id) public{
         require(isAdmin(msg.sender));
         LandR[_id].isLandVerified=true;
     }
 
-// [User]    
+// [User+Admin]    
     function isLandVerified(uint id) public view returns(bool){
         return LandR[id].isLandVerified;
     }
