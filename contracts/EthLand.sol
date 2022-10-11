@@ -29,14 +29,14 @@ contract Land {
     }
 
     struct LandInfo {
-        uint khaiwatNumber; //auto
-        uint KhatuniCultivatorNo; //auto
+        uint khaiwatNumber;
+        string CoShares; 
         string name;
-        string fatherName;
+        string location; // it is considered as location
         string natureOfProperty;
         string specificShareinJointAccount;
-        uint specificAreainaccordancewiththeShare;
-        uint khasraNo; 
+        string specificAreainaccordancewiththeShare; // converted from uint to string
+        string khasraNo; // it can be multiple
         uint landPrice;
         bool isforSell;
         bool isLandVerified;
@@ -243,12 +243,11 @@ contract Land {
    
    //-----------------------------------------------Land-----------------------------------------------
 
-   function addLand(string memory _name, string memory _fathername, string memory _natureofproperty, string memory _specificShareinJointAccount, uint _specificAreainaccordancewiththeShare,uint _khasranumber , uint _landPrice ) public {
+   function addLand(string memory _name, string memory _coShare, string memory _location, string memory _natureofproperty, string memory _specificShareinJointAccount, string memory _specificAreainaccordancewiththeShare,string memory _khasranumber , uint _landPrice ) public {
         require(isUserVerified(msg.sender));
         khaiwatNumber++;
-        KhatuniCultivatorNo++;
         landsCount++;
-        LandR[landsCount] = LandInfo(khaiwatNumber, KhatuniCultivatorNo, _name, _fathername, _natureofproperty, _specificShareinJointAccount, _specificAreainaccordancewiththeShare, _khasranumber, _landPrice, false, false);
+        LandR[landsCount] = LandInfo(khaiwatNumber, _coShare, _name, _location, _natureofproperty, _specificShareinJointAccount, _specificAreainaccordancewiththeShare, _khasranumber, _landPrice, false, false);
         LandOwner[landsCount] = msg.sender;
         MyLands[msg.sender].push(landsCount);
         allLandList[1].push(landsCount);
