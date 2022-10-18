@@ -32,11 +32,11 @@ contract Land {
         uint khaiwatNumber;
         string CoShares; 
         string name;
-        string location; // it is considered as location
+        string fatherName; // it is considered as location
         string natureOfProperty;
         string specificShareinJointAccount;
         string specificAreainaccordancewiththeShare; // converted from uint to string
-        string khasraNo; // it can be multiple
+        string khasraNo; 
         uint landPrice;
         bool isforSell;
         bool isLandVerified;
@@ -67,6 +67,7 @@ contract Land {
     mapping(address => uint[])  MyLands;
     mapping(uint => address) public LandOwner;
     mapping(uint => uint[])  allLandList;
+    mapping(uint => uint[]) allunverifiedLandList;
 
 // general
     function isLogin(address _addr, uint _secP) public view returns(uint){
@@ -243,18 +244,19 @@ contract Land {
    
    //-----------------------------------------------Land-----------------------------------------------
 
-   function addLand(string memory _name, string memory _coShare, string memory _location, string memory _natureofproperty, string memory _specificShareinJointAccount, string memory _specificAreainaccordancewiththeShare,string memory _khasranumber , uint _landPrice ) public {
+   function addLand(string memory _name, string memory _coShare, string memory _fathername, string memory _natureofproperty, string memory _specificShareinJointAccount, string memory _specificAreainaccordancewiththeShare,string memory _khasranumber , uint _landPrice ) public {
         require(isUserVerified(msg.sender));
         khaiwatNumber++;
         landsCount++;
-        LandR[landsCount] = LandInfo(khaiwatNumber, _coShare, _name, _location, _natureofproperty, _specificShareinJointAccount, _specificAreainaccordancewiththeShare, _khasranumber, _landPrice, false, false);
+        LandR[landsCount] = LandInfo(khaiwatNumber, _coShare, _name, _fathername, _natureofproperty, _specificShareinJointAccount, _specificAreainaccordancewiththeShare, _khasranumber, _landPrice, false, false);
         LandOwner[landsCount] = msg.sender;
         MyLands[msg.sender].push(landsCount);
         allLandList[1].push(landsCount);
+        allunverifiedLandList[1].push(landsCount);
         // emit AddingLand(landsCount);
     }
 
-// [User]
+// [admin]
     function ReturnAllLandList() public view returns(uint[] memory)
     {
         return allLandList[1];
@@ -264,6 +266,17 @@ contract Land {
     function verifyLand(uint _id) public{
         require(isAdmin(msg.sender));
         LandR[_id].isLandVerified=true;
+        
+        uint len=allunverifiedLandList[1].length;
+        for(uint i=0;i<len;i++)
+        {
+            if(allunverifiedLandList[1][i]==_id)
+            {
+                allunverifiedLandList[1][i]=allunverifiedLandList[1][len-1];
+                allunverifiedLandList[1].pop();
+                break;
+            }
+        }
     }
 
 // [User+Admin]    
@@ -275,4 +288,10 @@ contract Land {
     function myAllLands(address id) public view returns( uint[] memory){
         return MyLands[id];
     }
+
+// [admin]
+    function allUnverifiedLands(uint id) public view returns( uint[] memory){
+        return allunverifiedLandList[id];
+    }
+
 }
