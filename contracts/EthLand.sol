@@ -29,14 +29,7 @@ contract Land {
     }
 
     struct LandInfo {
-        // uint khaiwatNumber;
-        // string CoShares;
-        // string name;
-        // string fatherName; // it is considered as location
-        // string natureOfProperty;
-        // string specificShareinJointAccount;
-        // string specificAreainaccordancewiththeShare; // converted from uint to string
-        // string khasraNo;
+        string landId;
         bool isLandVerified;
         uint256 landPrice;
         bool isforSell;
@@ -65,22 +58,20 @@ contract Land {
     //testing
     uint256 public landsCount;
     uint256 requestCount;
-    //  uint public khaiwatNumber;
-    //  uint public KhatuniCultivatorNo;
 
     //admin Mapping
-    mapping(address => Admin) public AdminMapping;
+    mapping(address => Admin) public AdminMapping; //Admin Detailed Info
     mapping(uint256 => address[]) allAdminList;
     mapping(address => bool) RegisteredAdminMapping;
 
     //users Mapping
-    mapping(address => User) public UserMapping;
+    mapping(address => User) public UserMapping; //Users Detailed Info
     mapping(uint256 => address) AllUsers;
     mapping(uint256 => address[]) allUsersList;
     mapping(uint256 => address[]) allUnverifiedUsersList;
     mapping(address => bool) RegisteredUserMapping;
 
-    //land working on it Mapping
+    //land Mapping
     mapping(uint256 => LandInfo) public LandR; //Land Detailed Info
     mapping(address => uint256[]) MyLands;
     mapping(uint256 => address) public LandOwner;
@@ -281,17 +272,13 @@ contract Land {
         return allUnverifiedUsersList[1];
     }
 
-    //-----------------------------------------------Land-----total=7------------------------------------------
-    // bool isLandVerified;
-    // uint landPrice;
-    // bool isforSell;
-    // address payable ownerAddress;
+    //-----------------------------------------------Land-----------------------------------------------
 
     // [admin] not implemented
-    function addLand(uint256 _landPrice, address _ownerPK) public {
+    function addLand(string memory _landId, uint256 _landPrice, address _ownerPK, bool _isForSale) public {
         //require(isUserVerified(msg.sender));
         landsCount++;
-        LandR[landsCount] = LandInfo(true, _landPrice, false, _ownerPK);
+        LandR[landsCount] = LandInfo(_landId, true, _landPrice, _isForSale, _ownerPK);
         LandOwner[landsCount] = _ownerPK;
         MyLands[_ownerPK].push(landsCount);
         allLandList[1].push(landsCount);
@@ -304,51 +291,55 @@ contract Land {
         return allLandList[1];
     }
 
-    // ====> Not using <==== [Admin]
-    function verifyLand(uint256 _id) public {
-        require(isAdmin(msg.sender));
-        LandR[_id].isLandVerified = true;
-
-        uint256 len = allunverifiedLandList[1].length;
-        for (uint256 i = 0; i < len; i++) {
-            if (allunverifiedLandList[1][i] == _id) {
-                allunverifiedLandList[1][i] = allunverifiedLandList[1][len - 1];
-                allunverifiedLandList[1].pop();
-                break;
-            }
-        }
-    }
-
-    // [User+Admin]   //send landid return true/false
-    function isLandVerified(uint256 id) public view returns (bool) {
-        return LandR[id].isLandVerified;
-    }
-
     // [User] //adress //return [1,2,3] of specific person
     function myAllLands(address id) public view returns (uint256[] memory) {
         return MyLands[id];
     }
 
-    // ====> Not using <====  [admin] //pass 1 // get list of unverfied lands
-    function allUnverifiedLands(uint256 id)
-        public
-        view
-        returns (uint256[] memory)
-    {
-        return allunverifiedLandList[id];
-    }
-
     // [users] not implemented
-    function makeItforSell(uint256 id) public {
+    function makeItforSell(uint256 id, bool isForSale) public {
         require(LandR[id].ownerAddress == msg.sender);
-        LandR[id].isforSell = true;
+        LandR[id].isforSell = isForSale;
     }
 
-    //-----------------------------------------------Land-Requests-----total=6------------------------------------------
+    
+    // ====> Not using <==== [Admin]
+    // function verifyLand(uint256 _id) public {
+    //     require(isAdmin(msg.sender));
+    //     LandR[_id].isLandVerified = true;
 
-    // [user] not implemented
+    //     uint256 len = allunverifiedLandList[1].length;
+    //     for (uint256 i = 0; i < len; i++) {
+    //         if (allunverifiedLandList[1][i] == _id) {
+    //             allunverifiedLandList[1][i] = allunverifiedLandList[1][len - 1];
+    //             allunverifiedLandList[1].pop();
+    //             break;
+    //         }
+    //     }
+    // }
+
+    // [User+Admin]   //send landid return true/false
+    // function isLandVerified(uint256 id) public view returns (bool) {
+    //     return LandR[id].isLandVerified;
+    // }
+
+    
+    // ====> Not using <====  [admin] //pass 1 // get list of unverfied lands
+    // function allUnverifiedLands(uint256 id)
+    //     public
+    //     view
+    //     returns (uint256[] memory)
+    // {
+    //     return allunverifiedLandList[id];
+    // }
+
+    
+
+    //-----------------------------------------------Land-Requests-----------------------------------------------
+
+    // [user] not implemented ==> working state
     function requestforBuy(uint256 _landId) public {
-        require(isUserVerified(msg.sender) && isLandVerified(_landId));
+        //require(isUserVerified(msg.sender)); //temp commented it
         requestCount++;
         LandRequestMapping[requestCount] = LandRequest(
             requestCount,
@@ -362,7 +353,7 @@ contract Land {
         MySentLandRequest[msg.sender].push(requestCount);
     }
 
-    // [user] not implemented
+    // [user] not implemented //working
     function myReceivedLandRequests() public view returns (uint256[] memory) {
         return MyReceivedLandRequest[msg.sender];
     }
@@ -372,7 +363,7 @@ contract Land {
         return MySentLandRequest[msg.sender];
     }
 
-    // [user] not implemented
+    // [user] not implemented //working
     function acceptRequest(uint256 _requestId) public {
         require(LandRequestMapping[_requestId].sellerId == msg.sender);
         LandRequestMapping[_requestId].requestStatus = reqStatus.accepted;
@@ -389,7 +380,7 @@ contract Land {
         return LandRequestMapping[id].isPaymentDone;
     }
 
-    //-----------------------------------------------Land-Payments-----total=4------------------------------------------
+    //-----------------------------------------------Land-Payments-----------------------------------------------
 
     // [user] not implemented
     function landPrice(uint256 id) public view returns (uint256) {
@@ -425,10 +416,10 @@ contract Land {
         _reveiver.transfer(msg.value);
     }
 
-    //-----------------------------------------------Land-Ownership-----total=1------------------------------------------
+    //-----------------------------------------------Land-Ownership-----------------------------------------------
     // [Admin] not implemented
     function transferOwnership(uint256 _requestId) public returns (bool) {
-        require(isAdmin(msg.sender));
+        //require(isAdmin(msg.sender)); //temp
         if (LandRequestMapping[_requestId].isPaymentDone == false) return false;
 
         LandRequestMapping[_requestId].requestStatus = reqStatus.commpleted;
