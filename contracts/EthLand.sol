@@ -274,11 +274,22 @@ contract Land {
 
     //-----------------------------------------------Land-----------------------------------------------
 
-    // [admin] not implemented
-    function addLand(string memory _landId, uint256 _landPrice, address _ownerPK, bool _isForSale) public {
+    // [admin]
+    function addLand(
+        string memory _landId,
+        uint256 _landPrice,
+        address _ownerPK,
+        bool _isForSale
+    ) public {
         //require(isUserVerified(msg.sender));
         landsCount++;
-        LandR[landsCount] = LandInfo(_landId, true, _landPrice, _isForSale, _ownerPK);
+        LandR[landsCount] = LandInfo(
+            _landId,
+            true,
+            _landPrice,
+            _isForSale,
+            _ownerPK
+        );
         LandOwner[landsCount] = _ownerPK;
         MyLands[_ownerPK].push(landsCount);
         allLandList[1].push(landsCount);
@@ -297,12 +308,16 @@ contract Land {
     }
 
     // [users] not implemented
-    function makeItforSell(uint256 id, bool isForSale) public {
+    function makeItforSell(
+        uint256 id,
+        bool isForSale,
+        uint256 price
+    ) public {
         require(LandR[id].ownerAddress == msg.sender);
         LandR[id].isforSell = isForSale;
+        LandR[id].landPrice = price;
     }
 
-    
     // ====> Not using <==== [Admin]
     // function verifyLand(uint256 _id) public {
     //     require(isAdmin(msg.sender));
@@ -323,7 +338,6 @@ contract Land {
     //     return LandR[id].isLandVerified;
     // }
 
-    
     // ====> Not using <====  [admin] //pass 1 // get list of unverfied lands
     // function allUnverifiedLands(uint256 id)
     //     public
@@ -332,8 +346,6 @@ contract Land {
     // {
     //     return allunverifiedLandList[id];
     // }
-
-    
 
     //-----------------------------------------------Land-Requests-----------------------------------------------
 
