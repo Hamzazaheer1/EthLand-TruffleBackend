@@ -29,11 +29,14 @@ contract Land {
     }
 
     struct LandInfo {
+        uint256 Id;
         string landId;
         bool isLandVerified;
         uint256 landPrice;
         bool isforSell;
         address ownerAddress;
+        string location;
+        string area;
     }
 
     struct LandRequest {
@@ -55,7 +58,7 @@ contract Land {
     uint256 adminCount;
     uint256 public userCount;
 
-    //testing
+    //counts
     uint256 public landsCount;
     uint256 requestCount;
 
@@ -79,15 +82,15 @@ contract Land {
     mapping(uint256 => uint256[]) allLandList;
 
     //land requests Mapping
-    mapping(uint256 => LandRequest) public LandRequestMapping;
+    mapping(uint256 => LandRequest) public LandRequestMapping; // Land Request Detailed Info
     mapping(address => uint256[]) MyReceivedLandRequest;
     mapping(address => uint256[]) MySentLandRequest;
 
     //payment Mapping
     mapping(uint256 => uint256[]) paymentDoneList;
 
-    //APIs
-    // general
+    // ABIs
+    // [general]
     function isLogin(address _addr, uint256 _secP)
         public
         view
@@ -177,7 +180,7 @@ contract Land {
         }
     }
 
-    // general
+    // [general]
     function isAdmin(address _id) public view returns (bool) {
         if (RegisteredAdminMapping[_id]) {
             return true;
@@ -188,7 +191,7 @@ contract Land {
 
     //-----------------------------------------------User-----------------------------------------------
 
-    // general
+    // [general]
     function isUserRegistered(address _addr) public view returns (bool) {
         if (RegisteredUserMapping[_addr]) {
             return true;
@@ -221,10 +224,9 @@ contract Land {
             _mobile,
             false
         );
-        //emit Registration(msg.sender);
     }
 
-    // general
+    // [general]
     function isUserVerified(address id) public view returns (bool) {
         return UserMapping[id].isUserVerified;
     }
@@ -279,16 +281,21 @@ contract Land {
         string memory _landId,
         uint256 _landPrice,
         address _ownerPK,
-        bool _isForSale
+        bool _isForSale,
+        string memory _location,
+        string memory _area
     ) public {
         //require(isUserVerified(msg.sender));
         landsCount++;
         LandR[landsCount] = LandInfo(
+            landsCount,
             _landId,
             true,
             _landPrice,
             _isForSale,
-            _ownerPK
+            _ownerPK,
+            _location,
+            _area
         );
         LandOwner[landsCount] = _ownerPK;
         MyLands[_ownerPK].push(landsCount);
@@ -297,17 +304,17 @@ contract Land {
         // emit AddingLand(landsCount);
     }
 
-    // [admin] //return [1,2,3]
+    // [admin]
     function ReturnAllLandList() public view returns (uint256[] memory) {
         return allLandList[1];
     }
 
-    // [User] //adress //return [1,2,3] of specific person
+    // [User]
     function myAllLands(address id) public view returns (uint256[] memory) {
         return MyLands[id];
     }
 
-    // [users] not implemented
+    // [users]
     function makeItforSell(
         uint256 id,
         bool isForSale,
@@ -318,40 +325,15 @@ contract Land {
         LandR[id].landPrice = price;
     }
 
-    // ====> Not using <==== [Admin]
-    // function verifyLand(uint256 _id) public {
-    //     require(isAdmin(msg.sender));
-    //     LandR[_id].isLandVerified = true;
-
-    //     uint256 len = allunverifiedLandList[1].length;
-    //     for (uint256 i = 0; i < len; i++) {
-    //         if (allunverifiedLandList[1][i] == _id) {
-    //             allunverifiedLandList[1][i] = allunverifiedLandList[1][len - 1];
-    //             allunverifiedLandList[1].pop();
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // [User+Admin]   //send landid return true/false
-    // function isLandVerified(uint256 id) public view returns (bool) {
-    //     return LandR[id].isLandVerified;
-    // }
-
-    // ====> Not using <====  [admin] //pass 1 // get list of unverfied lands
-    // function allUnverifiedLands(uint256 id)
-    //     public
-    //     view
-    //     returns (uint256[] memory)
-    // {
-    //     return allunverifiedLandList[id];
-    // }
-
     //-----------------------------------------------Land-Requests-----------------------------------------------
 
-    // [user] not implemented ==> working state
+    // [user]
     function requestforBuy(uint256 _landId) public {
-        //require(isUserVerified(msg.sender)); //temp commented it
+        require(isUserVerified(msg.sender));
+        require(
+            msg.sender != LandR[_landId].ownerAddress,
+            "You cannot buy your own land"
+        );
         requestCount++;
         LandRequestMapping[requestCount] = LandRequest(
             requestCount,
@@ -365,41 +347,49 @@ contract Land {
         MySentLandRequest[msg.sender].push(requestCount);
     }
 
-    // [user] not implemented //working
-    function myReceivedLandRequests() public view returns (uint256[] memory) {
-        return MyReceivedLandRequest[msg.sender];
+    // [user]
+    function myReceivedLandRequests(address _id)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return MyReceivedLandRequest[_id];
     }
 
-    // [user] not implemented
-    function mySentLandRequests() public view returns (uint256[] memory) {
-        return MySentLandRequest[msg.sender];
+    // [user]
+    function mySentLandRequests(address _id)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return MySentLandRequest[_id];
     }
 
-    // [user] not implemented //working
+    // [user]
     function acceptRequest(uint256 _requestId) public {
         require(LandRequestMapping[_requestId].sellerId == msg.sender);
         LandRequestMapping[_requestId].requestStatus = reqStatus.accepted;
     }
 
-    // [user] not implemented
+    // [user]
     function rejectRequest(uint256 _requestId) public {
         require(LandRequestMapping[_requestId].sellerId == msg.sender);
         LandRequestMapping[_requestId].requestStatus = reqStatus.rejected;
     }
 
-    // [user] not implemented
-    function requesteStatus(uint256 id) public view returns (bool) {
-        return LandRequestMapping[id].isPaymentDone;
-    }
+    // [User,Admin] not implemented
+    // function requesteStatus(uint256 id) public view returns (bool) {
+    //     return LandRequestMapping[id].isPaymentDone;
+    // }
 
     //-----------------------------------------------Land-Payments-----------------------------------------------
 
-    // [user] not implemented
+    // [user]
     function landPrice(uint256 id) public view returns (uint256) {
         return LandR[id].landPrice;
     }
 
-    // [user] not implemented
+    // [user]
     function makePayment(uint256 _requestId) public payable {
         require(
             LandRequestMapping[_requestId].buyerId == msg.sender &&
@@ -408,8 +398,6 @@ contract Land {
         );
 
         LandRequestMapping[_requestId].requestStatus = reqStatus.paymentdone;
-        //LandRequestMapping[_requestId].sellerId.transfer(lands[LandRequestMapping[_requestId].landId].landPrice);
-        //lands[LandRequestMapping[_requestId].landId].ownerAddress.transfer(lands[LandRequestMapping[_requestId].landId].landPrice);
         address payable sellerAddr = payable(
             LandR[LandRequestMapping[_requestId].landId].ownerAddress
         );
@@ -418,20 +406,15 @@ contract Land {
         paymentDoneList[1].push(_requestId);
     }
 
-    // [user] not implemented
+    // [admin]
     function returnPaymentDoneList() public view returns (uint256[] memory) {
         return paymentDoneList[1];
     }
 
-    // [user] not implemented
-    function makePaymentTestFun(address payable _reveiver) public payable {
-        _reveiver.transfer(msg.value);
-    }
-
     //-----------------------------------------------Land-Ownership-----------------------------------------------
-    // [Admin] not implemented
+    // [Admin]
     function transferOwnership(uint256 _requestId) public returns (bool) {
-        //require(isAdmin(msg.sender)); //temp
+        require(isAdmin(msg.sender));
         if (LandRequestMapping[_requestId].isPaymentDone == false) return false;
 
         LandRequestMapping[_requestId].requestStatus = reqStatus.commpleted;
@@ -448,7 +431,6 @@ contract Land {
                 MyLands[LandRequestMapping[_requestId].sellerId][i] = MyLands[
                     LandRequestMapping[_requestId].sellerId
                 ][len - 1];
-                //MyLands[LandRequestMapping[_requestId].sellerId].length--;
                 MyLands[LandRequestMapping[_requestId].sellerId].pop();
                 break;
             }
